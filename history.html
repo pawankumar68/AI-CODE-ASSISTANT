@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat History — AI Powered Code Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body class="history-body">
+
+<!-- NAV -->
+<nav>
+  <div class="nav-left">
+    <a href="index.html" class="back-btn">← Home</a>
+    <span class="nav-sep">|</span>
+    <div class="page-title">📂 <span class="accent-green">Chat</span> History</div>
+  </div>
+  <div style="display:flex;gap:9px;">
+    <button class="btn-nav" onclick="hist_exportAll()">↓ Export All</button>
+    <button class="btn-nav danger" onclick="hist_clearAll()">✕ Clear All</button>
+  </div>
+</nav>
+
+<!-- LAYOUT -->
+<div class="history-layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="search-box">
+        <span style="color:var(--muted);font-size:0.85rem;">🔍</span>
+        <input type="text" id="hist-search" placeholder="Search sessions…" oninput="hist_search()"/>
+      </div>
+      <div class="filter-chips">
+        <span class="chip all active"        data-filter="all"        onclick="hist_setFilter(this)">All</span>
+        <span class="chip gen"               data-filter="gen"        onclick="hist_setFilter(this)">Generator</span>
+        <span class="chip runner"            data-filter="runner"     onclick="hist_setFilter(this)">Runner</span>
+        <span class="chip explainer"         data-filter="explainer"  onclick="hist_setFilter(this)">Explainer</span>
+        <span class="chip error"             data-filter="error"      onclick="hist_setFilter(this)">Error</span>
+        <span class="chip summarizer"        data-filter="summarizer" onclick="hist_setFilter(this)">Summary</span>
+      </div>
+    </div>
+    <div class="sessions-list" id="hist-sessions-list"></div>
+    <div class="sidebar-footer">Total: <strong id="hist-total-count">0</strong> sessions</div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="hist-content">
+    <div class="hist-content-header">
+      <div class="hist-content-title" id="hist-content-title">
+        <span>📂</span> Select a session to view
+      </div>
+      <div class="hist-content-actions" id="hist-content-actions" style="display:none;">
+        <button class="btn-sm" onclick="hist_exportSession()">↓ Export</button>
+        <button class="btn-sm" onclick="hist_deleteActive()">✕ Delete</button>
+      </div>
+    </div>
+
+    <div class="empty-hist" id="hist-empty">
+      <div class="eh-icon">📂</div>
+      <h3>No session selected</h3>
+      <p>Choose a session from the left to view it here</p>
+    </div>
+    <div class="chat-view" id="hist-chat-view" style="display:none;"></div>
+
+    <div class="stats-bar">
+      <span>Sessions: <strong id="hist-stats-count">0</strong></span>
+      <span>Messages: <strong id="hist-stats-msgs">0</strong></span>
+      <span id="hist-stats-date">—</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-title">AI Powered Code Assistant</div>
+  <div class="footer-sub">
+    PBL Project <span class="dot">·</span> Built by <span class="ft-highlight">Lag Ninjas</span> <span class="dot">·</span> © 2025
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
