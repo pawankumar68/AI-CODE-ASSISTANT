@@ -766,3 +766,179 @@ footer {
 @keyframes bounce   { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
 @keyframes msgIn    { from{opacity:0;transform:translateY(7px)} to{opacity:1;transform:translateY(0)} }
 @keyframes blockIn  { from{opacity:0;transform:translateY(7px)} to{opacity:1;transform:translateY(0)} }
+
+
+/* ============================================================
+   RESPONSIVE — TABLET (max 768px)
+   ============================================================ */
+@media (max-width: 768px) {
+
+  /* NAV */
+  nav { padding: 12px 18px; flex-wrap: wrap; gap: 10px; }
+  .nav-fixed { position: relative; }
+  .logo-text .l1 { font-size: 0.68rem; }
+  .logo-text .l2 { font-size: 0.58rem; }
+  .btn-ghost { display: none; }
+  .lang-wrap { padding: 5px 10px; }
+  .lang-wrap label { display: none; }
+
+  /* HERO */
+  .hero { padding: 40px 20px 50px; }
+  .hero h1 { font-size: clamp(1.8rem, 8vw, 3rem); }
+  .hero > p { font-size: 0.95rem; padding: 0 8px; }
+  .hero-badge { font-size: 0.68rem; padding: 5px 12px; }
+
+  /* CARDS */
+  .cards-section { padding: 0 16px 60px; gap: 16px; }
+  .card { padding: 24px 20px; }
+  .card h3 { font-size: 1.1rem; }
+
+  /* MODAL */
+  .modal { width: calc(100vw - 32px); padding: 28px 22px; }
+  .modal h2 { font-size: 1.2rem; }
+
+  /* ── CODEGEN PAGE ── */
+  .codegen-body { height: auto; min-height: 100vh; }
+  .codegen-main { flex-direction: column; height: auto; overflow: visible; }
+
+  .chat-panel {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    height: 420px;
+    flex-shrink: 0;
+  }
+
+  .editor-panel { height: 420px; flex-shrink: 0; }
+  #monaco-editor-codegen { min-height: 300px; }
+
+  .editor-header { flex-wrap: wrap; gap: 8px; }
+  .editor-actions { gap: 5px; }
+  .btn-sm { padding: 5px 10px; font-size: 0.65rem; }
+
+  /* ── ASSISTANT PAGE ── */
+  .assistant-body { height: auto; min-height: 100vh; }
+  .assistant-main {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr auto;
+    height: auto; overflow: visible;
+  }
+
+  .toolbar {
+    grid-column: 1;
+    gap: 7px; padding: 10px 14px;
+  }
+  .toolbar-label { display: none; }
+  .feature-btn { padding: 7px 11px; font-size: 0.78rem; gap: 5px; }
+  .btn-clear-out { margin-left: 0; margin-top: 4px; width: 100%; justify-content: center; display: flex; }
+
+  .panel-left {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    height: 350px;
+    flex-shrink: 0;
+  }
+  #monaco-editor-assistant { min-height: 250px; }
+
+  .output-area { min-height: 300px; max-height: 400px; }
+
+  /* ── HISTORY PAGE ── */
+  .history-body { height: auto; min-height: 100vh; }
+  .history-layout { flex-direction: column; overflow: visible; height: auto; }
+
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    max-height: 340px;
+  }
+
+  .sessions-list { max-height: 180px; }
+
+  .hist-content { min-height: 400px; }
+  .chat-view { min-height: 300px; max-height: 500px; }
+
+  /* FOOTER */
+  footer { padding: 16px 16px; }
+  .footer-title { font-size: 0.68rem; letter-spacing: 1px; }
+  .footer-sub { font-size: 0.62rem; }
+  .footer-sub .dot { margin: 0 5px; }
+}
+
+
+/* ============================================================
+   RESPONSIVE — MOBILE (max 480px)
+   ============================================================ */
+@media (max-width: 480px) {
+
+  /* NAV */
+  nav { padding: 10px 14px; }
+  .logo-icon { width: 30px; height: 30px; font-size: 15px; }
+  .logo-text .l1 { font-size: 0.62rem; }
+  .logo-text .l2 { display: none; }
+  .btn-login { padding: 7px 14px; font-size: 0.78rem; }
+  .btn-login svg { display: none; }
+  .nav-sep { display: none; }
+  .page-title { font-size: 0.82rem; }
+  .back-btn { font-size: 0.72rem; }
+
+  /* HERO */
+  .hero { padding: 30px 16px 40px; }
+  .hero h1 { font-size: clamp(1.6rem, 9vw, 2.4rem); }
+  .hero > p { font-size: 0.88rem; margin-bottom: 32px; }
+  .hero-badge { font-size: 0.62rem; margin-bottom: 20px; }
+
+  /* CARDS */
+  .cards-section { padding: 0 12px 48px; gap: 14px; }
+  .card { padding: 20px 18px; border-radius: 12px; }
+  .card-icon { width: 46px; height: 46px; font-size: 22px; }
+  .card h3 { font-size: 1rem; }
+  .card > p { font-size: 0.82rem; margin-bottom: 18px; }
+  .card-tags { gap: 5px; margin-bottom: 20px; }
+  .ctag { font-size: 0.62rem; padding: 2px 7px; }
+  .card-cta { font-size: 0.82rem; }
+
+  /* MODAL */
+  .modal { width: calc(100vw - 24px); padding: 22px 18px; border-radius: 12px; }
+  .modal h2 { font-size: 1.1rem; }
+  .modal .modal-sub { font-size: 0.8rem; }
+  .btn-google { font-size: 0.84rem; padding: 10px; }
+  .modal-brand-text { font-size: 0.68rem; }
+  .modal-brand-text small { font-size: 0.56rem; }
+
+  /* CODEGEN */
+  .chat-panel { height: 380px; }
+  .chat-messages { padding: 12px; gap: 10px; }
+  .msg-bubble { font-size: 0.82rem; padding: 9px 12px; }
+  .chat-input-row { padding: 10px 12px; }
+  .editor-panel { height: 380px; }
+  .editor-header { padding: 8px 12px; }
+  .editor-actions .btn-sm:not(.primary) { display: none; }
+  .editor-footer { gap: 10px; font-size: 0.62rem; }
+
+  /* ASSISTANT */
+  .feature-btn { padding: 6px 9px; font-size: 0.72rem; }
+  .panel-left { height: 300px; }
+  .panel-header { padding: 8px 12px; }
+  .output-area { padding: 12px 14px; }
+
+  /* HISTORY */
+  .sidebar { max-height: 300px; }
+  .sidebar-header { padding: 10px 12px; }
+  .sessions-list { max-height: 160px; }
+  .hist-content-header { padding: 10px 14px; }
+  .hist-content-title { font-size: 0.8rem; }
+  .chat-view { padding: 14px; gap: 10px; }
+  .hm-bubble { font-size: 0.8rem; padding: 9px 12px; }
+  .stats-bar { gap: 12px; font-size: 0.62rem; padding: 6px 14px; }
+  .filter-chips { gap: 4px; }
+  .chip { font-size: 0.58rem; padding: 2px 7px; }
+
+  /* Nav actions on history */
+  .btn-nav { padding: 6px 10px; font-size: 0.65rem; }
+
+  /* FOOTER */
+  .footer-title { font-size: 0.62rem; }
+  .footer-sub { font-size: 0.58rem; }
+  .footer-sub .dot { margin: 0 4px; }
+}
