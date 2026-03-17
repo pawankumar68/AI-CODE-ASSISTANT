@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Code Generator — AI Powered Code Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+</head>
+<body class="codegen-body">
+
+<!-- NAV -->
+<nav>
+  <div class="nav-left">
+    <a href="index.html" class="back-btn">← Home</a>
+    <span class="nav-sep">|</span>
+    <div class="page-title">✦ <span class="accent">AI</span> Code Generator</div>
+  </div>
+  <div class="lang-wrap">
+    <label>LANGUAGE</label>
+    <select id="cgLangSelect" onchange="cg_changeLang()">
+      <option value="javascript">JavaScript</option>
+      <option value="python">Python</option>
+      <option value="typescript">TypeScript</option>
+      <option value="java">Java</option>
+      <option value="cpp">C++</option>
+      <option value="csharp">C#</option>
+      <option value="go">Go</option>
+      <option value="rust">Rust</option>
+      <option value="html">HTML</option>
+      <option value="css">CSS</option>
+      <option value="sql">SQL</option>
+      <option value="php">PHP</option>
+    </select>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="codegen-main">
+
+  <!-- CHAT -->
+  <div class="chat-panel">
+    <div class="chat-header">
+      <div class="status-dot"></div>
+      AI Model Active
+    </div>
+    <div class="chat-messages" id="cg-messages">
+      <div class="msg ai">
+        <div class="msg-label">AI ASSISTANT</div>
+        <div class="msg-bubble">👋 Hello! Select a language above and tell me what code you'd like — I'll write it straight into the editor!</div>
+      </div>
+    </div>
+    <div class="chat-input-row">
+      <textarea id="cg-input" placeholder="Describe the code you want…" rows="1"
+        onkeydown="cg_handleKey(event)" oninput="cg_autoResize(this)"></textarea>
+      <button class="send-btn" onclick="cg_sendMessage()">➤</button>
+    </div>
+  </div>
+
+  <!-- EDITOR -->
+  <div class="editor-panel">
+    <div class="editor-header">
+      <div class="editor-header-left">
+        <div class="file-tab">📄 <span id="cg-file-tab">generated.js</span></div>
+      </div>
+      <div class="editor-actions">
+        <button class="btn-sm" onclick="cg_copyCode()">⎘ Copy</button>
+        <button class="btn-sm" onclick="cg_clearEditor()">✕ Clear</button>
+        <button class="btn-sm primary" onclick="cg_download()">↓ Download</button>
+      </div>
+    </div>
+
+    <div class="empty-editor" id="cg-empty">
+      <div class="ei">✦</div>
+      <h3>No code generated yet</h3>
+      <p>Start chatting to generate code</p>
+    </div>
+    <div id="monaco-editor-codegen" style="display:none;"></div>
+
+    <div class="editor-footer">
+      <span>Lang: <strong id="cg-footer-lang">JavaScript</strong></span>
+      <span>Lines: <strong id="cg-footer-lines">0</strong></span>
+      <span>Chars: <strong id="cg-footer-chars">0</strong></span>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-title">AI Powered Code Assistant</div>
+  <div class="footer-sub">
+    PBL Project <span class="dot">·</span> Built by <span class="ft-highlight">Lag Ninjas</span> <span class="dot">·</span> © 2025
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
