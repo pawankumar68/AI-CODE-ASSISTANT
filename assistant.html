@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Assistant — AI Powered Code Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+</head>
+<body class="assistant-body">
+
+<!-- NAV -->
+<nav>
+  <div class="nav-left">
+    <a href="index.html" class="back-btn">← Home</a>
+    <span class="nav-sep">|</span>
+    <div class="page-title">🛠 <span class="accent-purple">Smart</span> Assistant</div>
+  </div>
+  <div class="lang-wrap">
+    <label>LANGUAGE</label>
+    <select id="asLangSelect" onchange="as_changeLang()">
+      <option value="javascript">JavaScript</option>
+      <option value="python">Python</option>
+      <option value="typescript">TypeScript</option>
+      <option value="java">Java</option>
+      <option value="cpp">C++</option>
+      <option value="csharp">C#</option>
+      <option value="go">Go</option>
+      <option value="rust">Rust</option>
+      <option value="html">HTML</option>
+      <option value="sql">SQL</option>
+    </select>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="assistant-main">
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <span class="toolbar-label">TOOLS :</span>
+    <button class="feature-btn btn-runner"     onclick="as_runFeature('runner')">    ▶ Run Code       </button>
+    <button class="feature-btn btn-explainer"  onclick="as_runFeature('explainer')"> 💡 Explain Code   </button>
+    <button class="feature-btn btn-error"      onclick="as_runFeature('error')">     🔧 Solve Errors   </button>
+    <button class="feature-btn btn-summarizer" onclick="as_runFeature('summarizer')">📋 Summarize Code </button>
+    <button class="btn-clear-out" onclick="as_clearOutput()">✕ Clear Output</button>
+  </div>
+
+  <!-- INPUT PANEL -->
+  <div class="panel panel-left">
+    <div class="panel-header">
+      <div class="panel-header-left"><div class="panel-title">📝 INPUT CODE</div></div>
+      <div style="display:flex;gap:7px;">
+        <button class="btn-tiny" onclick="as_pasteCode()">⎘ Paste</button>
+        <button class="btn-tiny" onclick="as_clearEditor()">✕ Clear</button>
+      </div>
+    </div>
+    <div id="monaco-editor-assistant"></div>
+    <div class="panel-footer">
+      <span>Lines: <strong id="as-footer-lines">0</strong></span>
+      <span>Chars: <strong id="as-footer-chars">0</strong></span>
+      <span id="as-footer-lang">JavaScript</span>
+    </div>
+  </div>
+
+  <!-- OUTPUT PANEL -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-header-left"><div class="panel-title">📤 OUTPUT</div></div>
+      <div id="as-active-feature" style="font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);">Waiting…</div>
+    </div>
+    <div class="loading-bar" id="as-loading-bar"></div>
+    <div class="output-area" id="as-output">
+      <div class="output-placeholder">
+        <div class="op-icon">🛠</div>
+        <p>Paste your code on the left,<br/>then click a tool button above.</p>
+      </div>
+    </div>
+    <div class="panel-footer">
+      <span>Results: <strong id="as-result-count">0</strong></span>
+      <span id="as-last-action">—</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-title">AI Powered Code Assistant</div>
+  <div class="footer-sub">
+    PBL Project <span class="dot">·</span> Built by <span class="ft-highlight">Lag Ninjas</span> <span class="dot">·</span> © 2025
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
