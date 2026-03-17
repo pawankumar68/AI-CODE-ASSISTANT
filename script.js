@@ -1,0 +1,527 @@
+/* ============================================================
+   AI POWERED CODE ASSISTANT — script.js
+   Shared JavaScript for all pages
+   ============================================================ */
+
+/* ============================================================
+   INDEX PAGE — Login Modal
+   ============================================================ */
+function openModal() {
+  const el = document.getElementById('loginModal');
+  if (el) el.classList.add('active');
+}
+
+function closeModal() {
+  const el = document.getElementById('loginModal');
+  if (el) el.classList.remove('active');
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('loginModal')) closeModal();
+}
+
+function loginWithGoogle() {
+  const btn = document.querySelector('.btn-google');
+  if (!btn) return;
+  const original = btn.innerHTML;
+  btn.innerHTML = '⏳ Redirecting to Google…';
+  btn.disabled = true;
+  // Plug in your Firebase / Google OAuth here
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.innerHTML = original;
+    alert('Connect your Firebase or Google OAuth credentials to activate Google login.');
+  }, 1400);
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+
+/* ============================================================
+   CODE GENERATOR PAGE
+   ============================================================ */
+let cg_editor = null;
+let cg_lang   = 'javascript';
+let cg_ready  = false;
+
+const CG_EXT = {
+  javascript:'js', python:'py', typescript:'ts', java:'java',
+  cpp:'cpp', csharp:'cs', go:'go', rust:'rs',
+  html:'html', css:'css', sql:'sql', php:'php'
+};
+
+function cg_initMonaco() {
+  if (!document.getElementById('monaco-editor-codegen')) return;
+  require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
+  require(['vs/editor/editor.main'], function () {
+    cg_editor = monaco.editor.create(document.getElementById('monaco-editor-codegen'), {
+      value: '', language: 'javascript', theme: 'vs-dark',
+      fontSize: 14, fontFamily: "'Space Mono', monospace",
+      minimap: { enabled: false }, scrollBeyondLastLine: false,
+      automaticLayout: true, lineNumbers: 'on',
+      padding: { top: 14, bottom: 14 }, smoothScrolling: true, cursorBlinking: 'smooth',
+    });
+    cg_ready = true;
+    cg_editor.onDidChangeModelContent(() => {
+      const v = cg_editor.getValue();
+      const l = document.getElementById('cg-footer-lines');
+      const c = document.getElementById('cg-footer-chars');
+      if (l) l.textContent = v.split('\n').length;
+      if (c) c.textContent = v.length;
+    });
+  });
+}
+
+function cg_changeLang() {
+  const sel = document.getElementById('cgLangSelect');
+  if (!sel) return;
+  cg_lang = sel.value;
+  const ext = CG_EXT[cg_lang] || cg_lang;
+  const tab = document.getElementById('cg-file-tab');
+  const fl  = document.getElementById('cg-footer-lang');
+  if (tab) tab.textContent = `generated.${ext}`;
+  if (fl)  fl.textContent  = sel.options[sel.selectedIndex].text;
+  if (cg_editor) monaco.editor.setModelLanguage(cg_editor.getModel(), cg_lang);
+}
+
+function cg_handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); cg_sendMessage(); }
+}
+
+function cg_autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function cg_addMsg(role, text) {
+  const box = document.getElementById('cg-messages');
+  if (!box) return;
+  const d = document.createElement('div');
+  d.className = `msg ${role}`;
+  d.innerHTML = `
+    <div class="msg-label">${role === 'user' ? 'YOU' : 'AI ASSISTANT'}</div>
+    <div class="msg-bubble">${text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</div>`;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+}
+
+function cg_showTyping() {
+  const box = document.getElementById('cg-messages');
+  if (!box) return;
+  const d = document.createElement('div');
+  d.id = 'cg-typing'; d.className = 'msg ai';
+  d.innerHTML = `<div class="msg-label">AI ASSISTANT</div>
+    <div class="typing-indicator"><span></span><span></span><span></span></div>`;
+  box.appendChild(d); box.scrollTop = box.scrollHeight;
+}
+
+function cg_hideTyping() {
+  const el = document.getElementById('cg-typing');
+  if (el) el.remove();
+}
+
+function cg_showEditor() {
+  const empty = document.getElementById('cg-empty');
+  const cont  = document.getElementById('monaco-editor-codegen');
+  if (empty) empty.style.display = 'none';
+  if (cont)  cont.style.display  = 'block';
+}
+
+function cg_extractCode(text) {
+  const m = text.match(/```(?:\w+)?\n?([\s\S]*?)```/);
+  return m ? m[1].trim() : text.trim();
+}
+
+async function cg_sendMessage() {
+  const inp  = document.getElementById('cg-input');
+  if (!inp) return;
+  const text = inp.value.trim();
+  if (!text) return;
+
+  cg_addMsg('user', text);
+  inp.value = ''; inp.style.height = 'auto';
+  cg_showTyping();
+
+  const sel    = document.getElementById('cgLangSelect');
+  const lang   = sel ? sel.options[sel.selectedIndex].text : 'JavaScript';
+  const prompt = `You are an expert ${lang} developer. The user wants: "${text}".
+Write clean, well-commented ${lang} code.
+Wrap the code in a single code block using triple backticks.
+After the code block, write a brief 1–2 sentence explanation.`;
+
+  try {
+    const res  = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }] })
+    });
+    const data  = await res.json();
+    const reply = data.content?.[0]?.text || 'Sorry, could not generate code.';
+    cg_hideTyping();
+    cg_addMsg('ai', reply);
+    if (cg_ready) { cg_showEditor(); cg_editor.setValue(cg_extractCode(reply)); }
+  } catch {
+    cg_hideTyping();
+    cg_addMsg('ai', '❌ Error connecting to AI. Please try again.');
+  }
+}
+
+function cg_copyCode() {
+  if (!cg_editor) return;
+  navigator.clipboard.writeText(cg_editor.getValue());
+  const btn = event.target;
+  btn.textContent = '✓ Copied!';
+  setTimeout(() => btn.textContent = '⎘ Copy', 2000);
+}
+
+function cg_clearEditor() {
+  if (cg_editor) cg_editor.setValue('');
+  const empty = document.getElementById('cg-empty');
+  const cont  = document.getElementById('monaco-editor-codegen');
+  if (empty) empty.style.display = 'grid';
+  if (cont)  cont.style.display  = 'none';
+}
+
+function cg_download() {
+  if (!cg_editor) return;
+  const ext  = CG_EXT[cg_lang] || 'txt';
+  const blob = new Blob([cg_editor.getValue()], { type: 'text/plain' });
+  const a    = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `generated.${ext}`; a.click();
+}
+
+
+/* ============================================================
+   ASSISTANT PAGE
+   ============================================================ */
+let as_editor = null;
+let as_results = 0;
+
+function as_initMonaco() {
+  if (!document.getElementById('monaco-editor-assistant')) return;
+  require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
+  require(['vs/editor/editor.main'], function () {
+    as_editor = monaco.editor.create(document.getElementById('monaco-editor-assistant'), {
+      value: '// Paste or type your code here\n',
+      language: 'javascript', theme: 'vs-dark',
+      fontSize: 13, fontFamily: "'Space Mono', monospace",
+      minimap: { enabled: false }, scrollBeyondLastLine: false,
+      automaticLayout: true, lineNumbers: 'on',
+      padding: { top: 14, bottom: 14 }, smoothScrolling: true,
+    });
+    as_editor.onDidChangeModelContent(() => {
+      const v = as_editor.getValue();
+      const l = document.getElementById('as-footer-lines');
+      const c = document.getElementById('as-footer-chars');
+      if (l) l.textContent = v.split('\n').length;
+      if (c) c.textContent = v.length;
+    });
+  });
+}
+
+function as_changeLang() {
+  const sel = document.getElementById('asLangSelect');
+  if (!sel || !as_editor) return;
+  const lbl = document.getElementById('as-footer-lang');
+  if (lbl) lbl.textContent = sel.options[sel.selectedIndex].text;
+  monaco.editor.setModelLanguage(as_editor.getModel(), sel.value);
+}
+
+function as_clearEditor() {
+  if (as_editor) as_editor.setValue('// Paste or type your code here\n');
+}
+
+async function as_pasteCode() {
+  try {
+    const t = await navigator.clipboard.readText();
+    if (as_editor) as_editor.setValue(t);
+  } catch {}
+}
+
+function as_clearOutput() {
+  const area = document.getElementById('as-output');
+  if (!area) return;
+  area.innerHTML = `<div class="output-placeholder">
+    <div class="op-icon">🛠</div>
+    <p>Paste your code on the left,<br/>then click a tool button above.</p>
+  </div>`;
+  as_results = 0;
+  const rc = document.getElementById('as-result-count');
+  const la = document.getElementById('as-last-action');
+  const af = document.getElementById('as-active-feature');
+  if (rc) rc.textContent = '0';
+  if (la) la.textContent = '—';
+  if (af) af.textContent = 'Waiting…';
+}
+
+const AS_FEATURES = {
+  runner: {
+    label: '▶ RUN', cls: 'runner', icon: '▶',
+    prompt: (code, lang) =>
+      `You are a ${lang} code runner simulator. Simulate running this code and show the terminal output exactly. If errors exist, show the error.\n\nCode:\n\`\`\`${lang}\n${code}\n\`\`\`\n\nShow ONLY the terminal output.`
+  },
+  explainer: {
+    label: '💡 EXPLAIN', cls: 'explainer', icon: '💡',
+    prompt: (code, lang) =>
+      `You are an expert ${lang} teacher. Explain this code clearly for a beginner to intermediate programmer.\n\nCode:\n\`\`\`${lang}\n${code}\n\`\`\`\n\nProvide a clear, structured explanation.`
+  },
+  error: {
+    label: '🔧 ERRORS', cls: 'error', icon: '🔧',
+    prompt: (code, lang) =>
+      `You are an expert ${lang} debugger. Find bugs/errors. List each problem and fix.\n\nCode:\n\`\`\`${lang}\n${code}\n\`\`\`\n\nFormat: ISSUE → EXPLANATION → FIX`
+  },
+  summarizer: {
+    label: '📋 SUMMARY', cls: 'summarizer', icon: '📋',
+    prompt: (code, lang) =>
+      `Senior ${lang} developer. Summarize:\n1. What it does\n2. Key functions\n3. Input/Output\n4. Complexity\n5. Dependencies\n\nCode:\n\`\`\`${lang}\n${code}\n\`\`\`\n\nBe concise.`
+  }
+};
+
+async function as_runFeature(type) {
+  if (!as_editor) return;
+  const code = as_editor.getValue().trim();
+  if (!code || code === '// Paste or type your code here') {
+    alert('Please paste or type some code first!'); return;
+  }
+
+  const sel  = document.getElementById('asLangSelect');
+  const lang = sel ? sel.options[sel.selectedIndex].text : 'JavaScript';
+  const cfg  = AS_FEATURES[type];
+  const area = document.getElementById('as-output');
+  const af   = document.getElementById('as-active-feature');
+  const bar  = document.getElementById('as-loading-bar');
+  if (!area) return;
+
+  const ph = area.querySelector('.output-placeholder');
+  if (ph) ph.remove();
+
+  if (af) af.textContent = `${cfg.icon} ${cfg.label}…`;
+  if (bar) { bar.style.width = '60%'; setTimeout(() => bar.style.width = '85%', 600); }
+
+  const loadBlock = document.createElement('div');
+  loadBlock.className = 'output-block'; loadBlock.id = 'as-loading-block';
+  loadBlock.innerHTML = `<div class="ob-header ${cfg.cls}">${cfg.icon} ${cfg.label} — Processing…</div>
+    <div class="ob-body" style="color:var(--muted);">⏳ Analyzing…</div>`;
+  area.appendChild(loadBlock); area.scrollTop = area.scrollHeight;
+
+  try {
+    const res  = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000,
+        messages: [{ role: 'user', content: cfg.prompt(code, lang) }] })
+    });
+    const data  = await res.json();
+    const reply = data.content?.[0]?.text || 'No response.';
+
+    loadBlock.remove();
+    if (bar) { bar.style.width = '100%'; setTimeout(() => bar.style.width = '0', 500); }
+    as_results++;
+
+    const block = document.createElement('div');
+    block.className = 'output-block';
+    block.innerHTML = `<div class="ob-header ${cfg.cls}">${cfg.icon} ${cfg.label} — ${lang} · ${new Date().toLocaleTimeString()}</div>
+      <div class="ob-body">${reply.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`;
+    area.appendChild(block); area.scrollTop = area.scrollHeight;
+
+    const rc = document.getElementById('as-result-count');
+    const la = document.getElementById('as-last-action');
+    if (rc) rc.textContent = as_results;
+    if (la) la.textContent = `Last: ${cfg.label}`;
+    if (af) af.textContent = `✓ ${cfg.label} done`;
+  } catch {
+    loadBlock.remove();
+    if (bar) { bar.style.width = '100%'; setTimeout(() => bar.style.width = '0', 500); }
+    const block = document.createElement('div');
+    block.className = 'output-block';
+    block.innerHTML = `<div class="ob-header error">❌ ERROR</div>
+      <div class="ob-body">Failed to connect to AI. Please try again.</div>`;
+    area.appendChild(block); area.scrollTop = area.scrollHeight;
+  }
+}
+
+
+/* ============================================================
+   HISTORY PAGE
+   ============================================================ */
+const HIST_SAMPLE = [
+  { id:'h1', type:'gen', label:'Generator', lang:'Python', title:'Fibonacci sequence generator', time:'2h ago',
+    messages:[
+      { role:'user', text:'Write a Python function to generate Fibonacci sequence up to n terms.' },
+      { role:'ai',   text:'Here\'s a clean Python implementation:\n\n```python\ndef fibonacci(n):\n    a, b = 0, 1\n    result = []\n    for _ in range(n):\n        result.append(a)\n        a, b = b, a + b\n    return result\nprint(fibonacci(10))\n```\n\nThis uses an iterative approach for efficiency.' }
+    ]},
+  { id:'h2', type:'runner', label:'Runner', lang:'JavaScript', title:'Bubble sort simulation', time:'5h ago',
+    messages:[
+      { role:'user', text:'Run this bubble sort and show output.' },
+      { role:'output', feat:'runner', featLabel:'▶ RUN', featCls:'runner',
+        text:'$ node sort.js\n[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]\nSorted in 0.002ms\nProcess exited with code 0' }
+    ]},
+  { id:'h3', type:'explainer', label:'Explainer', lang:'JavaScript', title:'Async/await deep dive', time:'Yesterday',
+    messages:[
+      { role:'user', text:'Explain this async JavaScript code to me.' },
+      { role:'output', feat:'explainer', featLabel:'💡 EXPLAIN', featCls:'explainer',
+        text:'1. async marks the function as asynchronous\n2. await pauses until the Promise resolves\n3. try/catch handles errors\n4. fetch() returns a Promise resolving to a Response' }
+    ]},
+  { id:'h4', type:'error', label:'Error Solver', lang:'Python', title:'TypeError: NoneType fix', time:'Yesterday',
+    messages:[
+      { role:'user', text:'This Python code throws a TypeError. Fix it.' },
+      { role:'output', feat:'error', featLabel:'🔧 ERRORS', featCls:'error',
+        text:'ISSUE → Line 12: .upper() on None\nEXPLANATION → get_name() can return None\nFIX →\nif name := get_name():\n    print(name.upper())\nelse:\n    print("Not found")' }
+    ]},
+  { id:'h5', type:'summarizer', label:'Summarizer', lang:'TypeScript', title:'Auth middleware summary', time:'2 days ago',
+    messages:[
+      { role:'user', text:'Summarize this Express auth middleware.' },
+      { role:'output', feat:'summarizer', featLabel:'📋 SUMMARY', featCls:'summarizer',
+        text:'1. Purpose: JWT authentication middleware\n2. Functions: verifyToken(), extractBearer()\n3. Input: Authorization header | Output: next() or 401\n4. Complexity: O(1)\n5. Deps: jsonwebtoken, express' }
+    ]},
+  { id:'h6', type:'gen', label:'Generator', lang:'SQL', title:'Multi-table JOIN query', time:'3 days ago',
+    messages:[
+      { role:'user', text:'Write SQL to join users, orders, and products.' },
+      { role:'ai',   text:'```sql\nSELECT u.name, o.order_id, p.product_name, p.price\nFROM users u\nINNER JOIN orders o ON u.id = o.user_id\nINNER JOIN order_items oi ON o.order_id = oi.order_id\nINNER JOIN products p ON oi.product_id = p.id\nWHERE o.status = \'completed\'\nORDER BY o.created_at DESC;\n```' }
+    ]}
+];
+
+let hist_sessions     = JSON.parse(localStorage.getItem('aipca_hist') || 'null') || HIST_SAMPLE;
+let hist_activeFilter = 'all';
+let hist_active       = null;
+
+function hist_save()  { localStorage.setItem('aipca_hist', JSON.stringify(hist_sessions)); }
+
+function hist_init() {
+  if (!document.getElementById('hist-sessions-list')) return;
+  hist_render();
+  const sc = document.getElementById('hist-stats-count');
+  const sm = document.getElementById('hist-stats-msgs');
+  if (sc) sc.textContent = hist_sessions.length;
+  if (sm) sm.textContent = hist_sessions.reduce((a,s) => a + s.messages.length, 0);
+}
+
+function hist_render() {
+  const list   = document.getElementById('hist-sessions-list');
+  if (!list) return;
+  const search = (document.getElementById('hist-search')?.value || '').toLowerCase();
+
+  const filtered = hist_sessions.filter(s => {
+    const mf = hist_activeFilter === 'all' || s.type === hist_activeFilter;
+    const ms = !search || s.title.toLowerCase().includes(search) || s.lang.toLowerCase().includes(search);
+    return mf && ms;
+  });
+
+  const tc = document.getElementById('hist-total-count');
+  if (tc) tc.textContent = filtered.length;
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="no-sessions">No sessions found</div>'; return;
+  }
+
+  list.innerHTML = filtered.map(s => `
+    <div class="session-item ${hist_active?.id === s.id ? 'active' : ''}" onclick="hist_open('${s.id}')">
+      <div class="session-top">
+        <span class="s-tag ${s.type}">${s.label}</span>
+        <span class="s-time">${s.time}</span>
+      </div>
+      <div class="s-title">${s.title}</div>
+      <div class="s-preview">${s.lang} · ${s.messages.length} msg${s.messages.length !== 1 ? 's' : ''}</div>
+      <button class="del-btn" onclick="hist_delete(event,'${s.id}')">✕</button>
+    </div>`).join('');
+}
+
+function hist_open(id) {
+  hist_active = hist_sessions.find(s => s.id === id);
+  if (!hist_active) return;
+
+  document.getElementById('hist-empty')?.setAttribute('style','display:none');
+  const cv = document.getElementById('hist-chat-view');
+  const ha = document.getElementById('hist-content-actions');
+  const ht = document.getElementById('hist-content-title');
+  if (cv) cv.style.display = 'flex';
+  if (ha) ha.style.display = 'flex';
+  if (ht) ht.innerHTML = `<span class="s-tag ${hist_active.type}">${hist_active.label}</span> ${hist_active.title}`;
+
+  if (cv) {
+    cv.innerHTML = hist_active.messages.map(m => {
+      if (m.role === 'output') return `
+        <div class="feat-out-block">
+          <div class="feat-out-header s-tag ${m.featCls}">${m.featLabel} · ${hist_active.lang}</div>
+          <div class="feat-out-body">${m.text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+        </div>`;
+      return `
+        <div class="hm ${m.role}">
+          <div class="hm-label">${m.role === 'user' ? 'YOU' : 'AI ASSISTANT'}</div>
+          <div class="hm-bubble">${m.text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</div>
+        </div>`;
+    }).join('');
+  }
+
+  const sd = document.getElementById('hist-stats-date');
+  if (sd) sd.textContent = `Session: ${hist_active.time}`;
+  hist_render();
+}
+
+function hist_setFilter(el) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  hist_activeFilter = el.dataset.filter;
+  hist_render();
+}
+
+function hist_search() { hist_render(); }
+
+function hist_delete(e, id) {
+  e.stopPropagation();
+  if (!confirm('Delete this session?')) return;
+  hist_sessions = hist_sessions.filter(s => s.id !== id);
+  if (hist_active?.id === id) hist_resetContent();
+  hist_save(); hist_render();
+}
+
+function hist_deleteActive() {
+  if (!hist_active || !confirm('Delete this session?')) return;
+  hist_sessions = hist_sessions.filter(s => s.id !== hist_active.id);
+  hist_resetContent(); hist_save(); hist_render();
+}
+
+function hist_resetContent() {
+  hist_active = null;
+  document.getElementById('hist-empty')?.removeAttribute('style');
+  const cv = document.getElementById('hist-chat-view');
+  const ha = document.getElementById('hist-content-actions');
+  const ht = document.getElementById('hist-content-title');
+  if (cv) cv.style.display = 'none';
+  if (ha) ha.style.display = 'none';
+  if (ht) ht.innerHTML = '<span>📂</span> Select a session to view';
+}
+
+function hist_clearAll() {
+  if (!confirm('Clear ALL history? Cannot be undone.')) return;
+  hist_sessions = []; hist_resetContent(); hist_save(); hist_render();
+}
+
+function hist_exportSession() {
+  if (!hist_active) return;
+  const text = `# ${hist_active.title}\nType: ${hist_active.label} | Lang: ${hist_active.lang} | ${hist_active.time}\n\n` +
+    hist_active.messages.map(m => `[${m.role.toUpperCase()}]\n${m.text}`).join('\n\n---\n\n');
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([text], {type:'text/plain'})),
+    download: `${hist_active.title.replace(/\s+/g,'-')}.txt`
+  }); a.click();
+}
+
+function hist_exportAll() {
+  const text = hist_sessions.map(s =>
+    `# ${s.title}\nType: ${s.label} | Lang: ${s.lang} | ${s.time}\n\n` +
+    s.messages.map(m => `[${m.role.toUpperCase()}]\n${m.text}`).join('\n\n---\n\n')
+  ).join('\n\n==========\n\n');
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([text], {type:'text/plain'})),
+    download: 'aipca-history.txt'
+  }); a.click();
+}
+
+/* ── Auto-init on page load ── */
+window.addEventListener('DOMContentLoaded', () => {
+  cg_initMonaco();
+  as_initMonaco();
+  hist_init();
+});
