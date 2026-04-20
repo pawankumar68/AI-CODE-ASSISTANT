@@ -4,7 +4,7 @@
 A frontend web application that provides AI-powered coding tools.
 
 ## 🔴 Live Demo
-[Click here to view the project](https://pawankumar68.github.io/pbl-project/)
+[Click here to view the project]( https://pawankumar68.github.io/AI-CODE-ASSISTANT/)
 
 ## 📌 Features
 - **Code Generator** — Generate production-ready code in any language
