@@ -6,9 +6,9 @@
 /* ============================================================
    INDEX PAGE — Login Modal
    ============================================================ */
-function openModal() {
-  const el = document.getElementById('loginModal');
-  if (el) el.classList.add('active');
+function openModal(tab) {
+  document.getElementById('loginModal').classList.add('active');
+  switchTab(tab || 'login');
 }
 
 function closeModal() {
@@ -20,19 +20,119 @@ function handleOverlayClick(e) {
   if (e.target === document.getElementById('loginModal')) closeModal();
 }
 
+function switchTab(tab) {
+  const panelLogin  = document.getElementById('panel-login');
+  const panelSignup = document.getElementById('panel-signup');
+  const tabLogin    = document.getElementById('tab-login');
+  const tabSignup   = document.getElementById('tab-signup');
+  const indicator   = document.getElementById('tab-indicator');
+  if (!panelLogin) return;
+
+  // Clear errors
+  showError('login-error', '');
+  showError('signup-error', '');
+
+  if (tab === 'signup') {
+    panelLogin.style.display  = 'none';
+    panelSignup.style.display = 'block';
+    tabLogin.classList.remove('active');
+    tabSignup.classList.add('active');
+    if (indicator) indicator.classList.add('right');
+  } else {
+    panelLogin.style.display  = 'block';
+    panelSignup.style.display = 'none';
+    tabLogin.classList.add('active');
+    tabSignup.classList.remove('active');
+    if (indicator) indicator.classList.remove('right');
+  }
+}
+
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (msg) { el.textContent = msg; el.classList.add('show'); }
+  else      { el.textContent = ''; el.classList.remove('show'); }
+}
+
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  if (input.type === 'password') { input.type = 'text'; btn.style.opacity = '0.9'; }
+  else                           { input.type = 'password'; btn.style.opacity = '0.4'; }
+}
+
+function handleLogin() {
+  const email    = document.getElementById('login-email')?.value.trim();
+  const password = document.getElementById('login-password')?.value;
+  if (!email)    { showError('login-error', '⚠ Please enter your email.'); return; }
+  if (!password) { showError('login-error', '⚠ Please enter your password.'); return; }
+  if (!/\S+@\S+\.\S+/.test(email)) { showError('login-error', '⚠ Enter a valid email address.'); return; }
+  showError('login-error', '');
+  // 🔌 Connect Firebase auth here
+  alert(`Logged in as ${email}\n\n(Connect Firebase to enable real auth.)`);
+  closeModal();
+}
+
+function handleSignup() {
+  const name     = document.getElementById('signup-name')?.value.trim();
+  const email    = document.getElementById('signup-email')?.value.trim();
+  const password = document.getElementById('signup-password')?.value;
+  const confirm  = document.getElementById('signup-confirm')?.value;
+
+  if (!name)              { showError('signup-error', '⚠ Please enter your full name.'); return; }
+  if (!email)             { showError('signup-error', '⚠ Please enter your email.'); return; }
+  if (!/\S+@\S+\.\S+/.test(email)) { showError('signup-error', '⚠ Enter a valid email address.'); return; }
+  if (!password)          { showError('signup-error', '⚠ Please create a password.'); return; }
+  if (password.length < 6){ showError('signup-error', '⚠ Password must be at least 6 characters.'); return; }
+  if (password !== confirm){ showError('signup-error', '⚠ Passwords do not match.'); return; }
+  showError('signup-error', '');
+  // 🔌 Connect Firebase auth here
+  alert(`Account created for ${name}!\n\n(Connect Firebase to enable real auth.)`);
+  closeModal();
+}
+
 function loginWithGoogle() {
-  const btn = document.querySelector('.btn-google');
-  if (!btn) return;
-  const original = btn.innerHTML;
-  btn.innerHTML = '⏳ Redirecting to Google…';
-  btn.disabled = true;
-  // Plug in your Firebase / Google OAuth here
+  const btns = document.querySelectorAll('.btn-google');
+  btns.forEach(btn => { btn.textContent = '⏳ Redirecting…'; btn.disabled = true; });
+  // 🔌 Connect Firebase Google OAuth here
   setTimeout(() => {
-    btn.disabled = false;
-    btn.innerHTML = original;
-    alert('Connect your Firebase or Google OAuth credentials to activate Google login.');
+    btns.forEach(btn => { btn.disabled = false; });
+    document.querySelectorAll('.btn-google')[0].innerHTML = `<svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.909-2.259c-.806.54-1.836.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg> Continue with Google`;
+    document.querySelectorAll('.btn-google')[1].innerHTML = `<svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.909-2.259c-.806.54-1.836.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg> Sign up with Google`;
+    alert('Connect your Firebase or Google OAuth credentials to activate this.');
   }, 1400);
 }
+
+// Password strength meter
+document.addEventListener('DOMContentLoaded', () => {
+  const pwInput = document.getElementById('signup-password');
+  if (pwInput) {
+    pwInput.addEventListener('input', () => {
+      const val   = pwInput.value;
+      const fill  = document.getElementById('strength-fill');
+      const label = document.getElementById('strength-label');
+      if (!fill || !label) return;
+      let score = 0;
+      if (val.length >= 6)  score++;
+      if (val.length >= 10) score++;
+      if (/[A-Z]/.test(val)) score++;
+      if (/[0-9]/.test(val)) score++;
+      if (/[^A-Za-z0-9]/.test(val)) score++;
+      const levels = [
+        { w:'0%',   c:'transparent', t:'' },
+        { w:'25%',  c:'#f87171',     t:'Weak' },
+        { w:'50%',  c:'#fb923c',     t:'Fair' },
+        { w:'75%',  c:'#facc15',     t:'Good' },
+        { w:'100%', c:'#10b981',     t:'Strong' },
+      ];
+      const lvl = levels[Math.min(score, 4)];
+      fill.style.width      = val ? lvl.w : '0%';
+      fill.style.background = lvl.c;
+      label.textContent     = val ? lvl.t : '';
+      label.style.color     = lvl.c;
+    });
+  }
+});
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
