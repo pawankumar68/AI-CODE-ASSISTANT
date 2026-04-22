@@ -16,7 +16,11 @@
     <span class="nav-sep">|</span>
     <div class="page-title">📂 <span class="accent-green">Chat</span> History</div>
   </div>
-  <div style="display:flex;gap:9px;">
+  <div style="display:flex;gap:9px;align-items:center;">
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark mode" aria-label="Toggle theme">
+      <span class="tt-icon tt-moon">🌙</span>
+      <span class="tt-icon tt-sun">☀️</span>
+    </button>
     <button class="btn-nav" onclick="hist_exportAll()">↓ Export All</button>
     <button class="btn-nav danger" onclick="hist_clearAll()">✕ Clear All</button>
   </div>

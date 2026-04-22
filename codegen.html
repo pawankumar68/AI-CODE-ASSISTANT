@@ -17,7 +17,12 @@
     <span class="nav-sep">|</span>
     <div class="page-title">✦ <span class="accent">AI</span> Code Generator</div>
   </div>
-  <div class="lang-wrap">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark mode" aria-label="Toggle theme">
+      <span class="tt-icon tt-moon">🌙</span>
+      <span class="tt-icon tt-sun">☀️</span>
+    </button>
+    <div class="lang-wrap">
     <label>LANGUAGE</label>
     <select id="cgLangSelect" onchange="cg_changeLang()">
       <option value="javascript">JavaScript</option>
@@ -33,6 +38,7 @@
       <option value="sql">SQL</option>
       <option value="php">PHP</option>
     </select>
+  </div>
   </div>
 </nav>
 

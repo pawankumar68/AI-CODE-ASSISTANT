@@ -4,6 +4,22 @@
    ============================================================ */
 
 /* ============================================================
+   GLOBAL THEME TOGGLE — shared across all pages
+   ============================================================ */
+function toggleTheme() {
+  document.body.classList.toggle('light-mode');
+  localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+}
+
+// Apply saved theme immediately on every page load
+(function () {
+  if (localStorage.getItem('theme') === 'light') {
+    document.body.classList.add('light-mode');
+  }
+})();
+
+
+/* ============================================================
    INDEX PAGE — Login Modal
    ============================================================ */
 function openModal(tab) {
